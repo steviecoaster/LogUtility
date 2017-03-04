@@ -24,9 +24,10 @@ Function Get-Log{
         [Parameter(Mandatory=$true,Position=0)]
         [String]$ComputerName,
         [ValidateSet("WindowsUpdate","FoG")]
-        [switch]$LogType
+        [string]$LogType
     )
 
+    Write-Verbose -Message "Testing WSMan connection and creating session..."
     #Test-WSMan Connection
     try {
         If(Test-WSMan -ComputerName $ComputerName){
@@ -42,10 +43,15 @@ Function Get-Log{
         Break
     
     }
+
+    Write-Verbose -Message "Gathering requested log file(s)"
     switch ($LogType) {
-        "WindowsUpdate" { Invoke-Command -Session $Session -ScriptBlock {Get}-Content C:\Windows\Logs\WindowsUpdate.log }
-        "FoG" { Invoke-Command -Session $Session -ScriptBlock {Get-Content C:\fog.log } }
-        
+        "WindowsUpdate" { Invoke-Command -Session $Session -ScriptBlock {Get-Content C:\Windows\WindowsUpdate.log -OutVariable $args[0]} -ArgumentList $WinUp }
+        "FoG" { Invoke-Command -Session $Session -ScriptBlock {Get-Content C:\fog.log -OutVariable $args[0]} -ArgumentList $foglog }
     }
     
+   Get-PSSession | Remove-PSSession
+	
 }
+
+Get-Log -ComputerName svalding-desk -LogType WindowsUpdate
