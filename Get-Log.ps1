@@ -1,29 +1,28 @@
-<#
-.SYNOPSIS
-Gather log files from remote computers
 
-.DESCRIPTION
-This script will gather the log files from remote computers by supplying a computer name and the type of log file you wish to collect.
-
-.PARAMETER ComputerName
-
-The target computer you wish to gather logs from.
-
-.PARAMETER LogType
-
-The log type you wish to gather from the remote computer.
-
-.EXAMPLE
-
-Get-Log -ComputerName -LogType WindowsUpdate
-
-#>
 Function Get-Log{
+    <#
+    .SYNOPSIS
+        Gather log files from remote computers.
+
+    .DESCRIPTION
+        This script will gather the log files from remote computers by supplying a computer name and the type of log file you wish to collect.
+
+    .PARAMETER ComputerName
+        The target computer you wish to gather logs from.
+
+    .PARAMETER LogType
+        The log type you wish to gather from the remote computer.
+
+    .EXAMPLE
+        Get-Log -ComputerName computer1 -LogType WindowsUpdate
+        Pulls the Windows Update Log from computer1 into your console for review.
+
+    #>
     Param(
         [cmdletBinding()]
         [Parameter(Mandatory=$true,Position=0)]
         [String]$ComputerName,
-        [ValidateSet("WindowsUpdate","FoG")]
+        [ValidateSet("WindowsUpdate","FoG","DISM")]
         [string]$LogType
     )
 
@@ -46,8 +45,9 @@ Function Get-Log{
 
     Write-Verbose -Message "Gathering requested log file(s)"
     switch ($LogType) {
-        "WindowsUpdate" { Invoke-Command -Session $Session -ScriptBlock {Get-Content C:\Windows\WindowsUpdate.log -OutVariable $args[0]} -ArgumentList $WinUp }
-        "FoG" { Invoke-Command -Session $Session -ScriptBlock {Get-Content C:\fog.log -OutVariable $args[0]} -ArgumentList $foglog }
+        "WindowsUpdate" { Invoke-Command -Session $Session -ScriptBlock { Get-Content C:\Windows\WindowsUpdate.log } }
+        "FoG" { Invoke-Command -Session $Session -ScriptBlock { Get-Content C:\fog.log } }
+        "DISM" { Invoke-Command -Session $Session -ScriptBlock { Get-Content C:\Windows\Logs\DISM\dism.log } }
     }
     
    Get-PSSession | Remove-PSSession
