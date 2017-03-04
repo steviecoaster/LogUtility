@@ -53,5 +53,3 @@ Function Get-Log{
    Get-PSSession | Remove-PSSession
 	
 }
-
-Get-Log -ComputerName svalding-desk -LogType WindowsUpdate
