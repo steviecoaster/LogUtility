@@ -1,4 +1,3 @@
-
 Function Get-Log{
     <#
     .SYNOPSIS
@@ -16,14 +15,32 @@ Function Get-Log{
     .EXAMPLE
         Get-Log -ComputerName computer1 -LogType WindowsUpdate
         Pulls the Windows Update Log from computer1 into your console for review.
+    .EXAMPLE
+        Get-Log -ComputerName computer1 -LogType DISM -Verbose
+        Pulls the DISM log into your console from computer1, and uses verbose output
+        to tell you what is happening on each part of the script.
 
     #>
     Param(
         [cmdletBinding()]
-        [Parameter(Mandatory=$true,Position=0)]
-        [String]$ComputerName,
-        [ValidateSet("WindowsUpdate","FoG","DISM")]
-        [string]$LogType
+
+        [Parameter(
+            Mandatory,
+            Position=0)]
+        [string]
+        $ComputerName,
+        
+        [Parameter(
+            Mandatory,
+            Positon=1)]
+        #You can change/add to/remove items between the () in lines 33-36 to suit your needs.
+        #Make sure you wrap your text in "".
+        [ValidateSet(           
+            "WindowsUpdate",
+            "FoG",
+            "DISM")]
+        [string]
+        $LogType
     )
 
     Write-Verbose -Message "Testing WSMan connection and creating session..."
@@ -45,11 +62,14 @@ Function Get-Log{
 
     Write-Verbose -Message "Gathering requested log file(s)"
     switch ($LogType) {
+        #For each log type you specified starting on line 35, construct a line just like below. 
+        #Log files are static in where they are kept, so hard-coding location is typically fine.
         "WindowsUpdate" { Invoke-Command -Session $Session -ScriptBlock { Get-Content C:\Windows\WindowsUpdate.log } }
         "FoG" { Invoke-Command -Session $Session -ScriptBlock { Get-Content C:\fog.log } }
         "DISM" { Invoke-Command -Session $Session -ScriptBlock { Get-Content C:\Windows\Logs\DISM\dism.log } }
     }
     
-   Get-PSSession | Remove-PSSession
+    Write-Verbose -Message "Cleaning up remote session."
+    Get-PSSession | Remove-PSSession
 	
 }
